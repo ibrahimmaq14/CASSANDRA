@@ -32,8 +32,8 @@ What it is not:
   words, it is a lab for testing smaller claims honestly, then keeping only
   the ones that survive.
 - **Not a library.** The scripts are research code run from the repository
-  root. There is no package to install, no stable API, and no test suite yet
-  (#12 tracks starting one).
+  root. There is no package to install and no stable API. The CPU helper test
+  suite is documented in the [lab README](experiments/tiny_language_lab/README.md#cpu-helper-tests).
 - **Not a place for results nobody can regenerate.** A number without the
   command, seeds and artifact behind it is not evidence here, however good
   it looks.
