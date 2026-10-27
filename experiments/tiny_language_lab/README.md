@@ -9,29 +9,6 @@ transformer. The bigram model is intentionally small: the whole parameter surfac
 is a `vocab_size x vocab_size` matrix, which makes it possible to compare three
 ways of forming the same parameters.
 
-## CPU helper tests
-
-The pytest suite lives in the repository-root `tests/` directory. In an
-isolated Python environment, install CPU PyTorch and the evaluation helper's
-NumPy dependency, plus pytest:
-
-```powershell
-python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-python -m pip install numpy pytest
-python -m pytest
-```
-
-Run the last command from the repository root. Once dependencies are installed,
-the tests need no network, CUDA, checkpoints, or corpus downloads. They check
-count logits, copy verification, codecs, split boundaries, text preprocessing,
-seeded in-memory corpora, and a tiny forward pass with a frozen count prior.
-The suite does not train models or write generated research artifacts. Each
-test's docstring names the function or documented behavior it protects.
-
-`tests/conftest.py` adds this lab directory to `sys.path`, preserving the
-scripts' sibling imports. The tests complement the CPU quick-start smoke
-commands in `CONTRIBUTING.md`; they do not replace experiment validation.
-
 ## Bigram methods
 
 - `count` constructs logits from smoothed bigram counts. This is the no-gradient baseline.
@@ -883,3 +860,26 @@ retention reports, regenerate the Phase 5 comparison figures and data with:
 ```powershell
 python .\experiments\tiny_language_lab\make_phase5_figures.py
 ```
+
+## CPU helper tests
+
+The pytest suite lives in the repository-root `tests/` directory. In an
+isolated Python environment, install CPU PyTorch and the evaluation helper's
+NumPy dependency, plus pytest:
+
+```powershell
+python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+python -m pip install numpy pytest
+python -m pytest
+```
+
+Run the last command from the repository root. Once dependencies are installed,
+the tests need no network, CUDA, checkpoints, or corpus downloads. They check
+count logits, copy verification, codecs, split boundaries, text preprocessing,
+seeded in-memory corpora, and a tiny forward pass with a frozen count prior.
+The suite does not train models or write generated research artifacts. Each
+test's docstring names the function or documented behavior it protects.
+
+`tests/conftest.py` adds this lab directory to `sys.path`, preserving the
+scripts' sibling imports. The tests complement the CPU quick-start smoke
+commands in `CONTRIBUTING.md`; they do not replace experiment validation.

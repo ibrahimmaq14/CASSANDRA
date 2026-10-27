@@ -28,7 +28,7 @@ def test_long_context_corpus_is_seeded_and_contains_correct_copy_answers(
         key = fields[2].removeprefix("key=")
         assert fields[:2] == ["case", f"{index:04d}"]
         assert fields[-1] == f"answer={key}"
-        assert key in ("abcdefghijklmnop" if random_payload else "abcdefgh")
+        assert key in set("abcdefghijklmnop" if random_payload else "abcdefgh")
     if not random_payload:
         assert [row.split()[2] for row in rows[:8]] == [f"key={key}" for key in "abcdefgh"]
 

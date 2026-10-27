@@ -16,7 +16,7 @@ answer-position selection, codec mappings, or seeded corpus contracts.
 | `tests/test_flagship_eval_helpers.py` | Tests ASCII encoding and alphabet normalization without loading checkpoints. |
 | `tests/test_corpus_generators.py` | Tests seeded corpus output, copy answers, held-out key separation, transition metadata, and invalid parameters. |
 | `experiments/tiny_language_lab/README.md` | Documents the test location, CPU dependencies, command, and scope. |
-| `CONTRIBUTING.md` | Replaces the outdated no-test-suite statement with a link to the test instructions. |
+| `CONTRIBUTING.md` | Links to the test instructions and adds pytest to the pre-PR code checklist. |
 | `docs/implementations/2026-10-22-cpu-helper-pytest-suite.md` | Records the approach, design decisions, and verification. |
 
 ## Implementation Approach
@@ -32,9 +32,16 @@ Expected count entries come from an explicitly enumerated sequence of
 transitions. Verifier cases use independently specified offsets, cover LF
 and CRLF, and distinguish identity mode from key-answer mode. The latter
 intentionally accepts nonidentity mappings; equality is checked only in
-identity mode. Split examples use lengths for which both sides can hold the
-required window. Encoding and normalization examples include explicit codec
+identity mode. Split margin examples use lengths for which both sides can
+hold the required window; a short-corpus case checks that `split_ids` raises.
+Encoding and normalization examples include explicit codec
 order, Unicode decomposition, unsupported input, empty input, and space runs.
+
+The accented normalization case expects the documented corpus behavior
+(`"\u00c1b"` becomes `"ab"`) with a strict expected-failure marker for
+[Issue 27](https://github.com/Cassandra-Collective/CASSANDRA/issues/27).
+The current helper inserts a space for the combining mark. A future fix
+will cause a strict XPASS failure, prompting removal of the marker.
 
 The stretch check builds a tiny transformer, applies the same
 `zero_output_head` helper used by the count-bigram training path, and checks
@@ -93,6 +100,9 @@ Linux, Python `3.14.7`, pytest `9.1.1`, NumPy `2.5.4`, and torch
   incorrect encoding IDs, omitting lowercase normalization, and leaving
   a nonzero residual bias. Each selected test group failed as intended.
   No research source was modified for these checks.
+  The audit-hook harness and mutation scripts were local checks only and
+  are not included in the repository, so those checks cannot be reproduced
+  from this checkout. The pytest and syntax commands above are reproducible.
 - All `48` tracked Python files, including the tests, passed AST parsing.
 - The diff whitespace check and changed-Markdown dash check passed. No
   generated corpus, checkpoint, dataset, or run output was staged.
@@ -117,6 +127,28 @@ Native Windows Python `3.11.9` passed the corpus module (`26 passed in
 (`WinError 4551`) during full-suite collection. Full-suite evidence above
 is from Linux on this same machine, not native Windows. No Windows
 security setting was changed.
+
+### PR review follow-up, 2026-10-27
+
+Addressed the normalization contract with the strict expected failure above,
+clarified the split-margin precondition and added short-corpus rejection
+coverage, accepted `ValueError` for unsupported non-ASCII encoding, and
+checked corpus keys against a set of single characters. Removed the
+construction-only `prior.requires_grad` assertion; retained the metadata
+unit-conversion consistency check. Moved the CPU test instructions to the
+end of the lab README and added pytest to the contributor checklist.
+
+Validation used the existing local WSL Linux environment described above:
+
+```powershell
+python -m pytest -q -rx --durations=5
+```
+
+With `OMP_NUM_THREADS=1` and `MKL_NUM_THREADS=1`, this reported
+`76 passed, 1 xfailed in 2.61s`. The expected failure is only the accented
+normalization case tracked in Issue 27. All `48` tracked Python files
+passed AST parsing; `git diff --check` and the changed-Markdown dash check
+were clean. This is helper-test validation, not a new research comparison.
 
 ## Related Docs
 

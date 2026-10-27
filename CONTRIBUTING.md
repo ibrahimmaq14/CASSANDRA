@@ -262,6 +262,8 @@ format. A typo fix does not need one.
   `cassandra_compare.py` and register the name in the `--configs` choices.
   Follow the existing names (for example `count_prior_lora_r2_copyw_floor`).
 - Run a short smoke test before any long run.
+- Before opening a PR, run `python -m pytest` from the repository root; see
+  the [CPU helper test setup](experiments/tiny_language_lab/README.md#cpu-helper-tests).
 - Check that every Python file still parses (from the repository root):
 
 ```

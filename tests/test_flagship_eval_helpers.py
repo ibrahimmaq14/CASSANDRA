@@ -36,8 +36,8 @@ def test_encode_fast_rejects_ascii_outside_the_alphabet(codec: Codec) -> None:
 
 
 def test_encode_fast_rejects_non_ascii_text(codec: Codec) -> None:
-    """encode_fast requires ASCII input before its vectorized lookup."""
-    with pytest.raises(UnicodeEncodeError):
+    """encode_fast rejects non-ASCII characters outside the model alphabet."""
+    with pytest.raises(ValueError):
         encode_fast("caf\u00e9", codec)
 
 
@@ -46,7 +46,17 @@ def test_encode_fast_rejects_non_ascii_text(codec: Codec) -> None:
     [
         ("BAC", "bac"),
         ("\uff22\uff21\uff23", "bac"),
-        ("\u00c1b", "a b"),
+        pytest.param(
+            "\u00c1b",
+            "ab",
+            marks=pytest.mark.xfail(
+                strict=True,
+                reason=(
+                    "Issue #27: normalize_to_alphabet replaces combining marks with "
+                    "spaces; corpus normalizers drop them"
+                ),
+            ),
+        ),
         ("b!!\t\nc", "b c"),
         ("  bac  ", " bac "),
         ("", " "),
@@ -56,7 +66,7 @@ def test_encode_fast_rejects_non_ascii_text(codec: Codec) -> None:
 def test_normalization_decomposes_lowercases_and_collapses_spaces(
     codec: Codec, text: str, expected: str
 ) -> None:
-    """normalize_to_alphabet applies NFKD, lowercase, replacement and space collapse."""
+    """normalize_to_alphabet mirrors corpus normalization within the codec alphabet."""
     normalized = normalize_to_alphabet(text, codec)
 
     assert normalized == expected

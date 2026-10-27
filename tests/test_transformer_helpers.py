@@ -11,6 +11,7 @@ from cassandra_tiny_transformer import (
     build_count_logits,
     find_verified_copy_targets,
     split_at_index,
+    split_ids,
     zero_output_head,
 )
 
@@ -88,12 +89,18 @@ def test_codec_accepts_empty_text() -> None:
 def test_split_keeps_training_prefix_and_validation_block_margin(
     length: int, fraction: float, block_size: int, expected: int
 ) -> None:
-    """split_at_index reserves block_size + 2 tokens on both sides of the split."""
+    """split_at_index reserves block_size + 2 per side when both windows fit."""
     split = split_at_index(length, fraction, block_size)
 
     assert split == expected
     assert split >= block_size + 2
     assert length - split >= block_size + 2
+
+
+def test_split_ids_rejects_a_corpus_too_short_for_both_windows() -> None:
+    """split_ids rejects short corpora even when split_at_index clamps the index."""
+    with pytest.raises(ValueError, match="Corpus is too short"):
+        split_ids(list(range(20)), val_fraction=0.5, block_size=10, device="cpu")
 
 
 @pytest.mark.parametrize("fraction", [0.0, 0.049, 0.501, 1.0])
@@ -186,4 +193,3 @@ def test_zero_residual_head_initially_reproduces_frozen_bigram_prior(seed: int) 
     assert torch.count_nonzero(residual).item() == 0
     torch.testing.assert_close(logits, prior[inputs], rtol=0, atol=0)
     torch.testing.assert_close(prior, original_prior, rtol=0, atol=0)
-    assert not prior.requires_grad
