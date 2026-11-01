@@ -46,17 +46,6 @@ def test_encode_fast_rejects_non_ascii_text(codec: Codec) -> None:
     [
         ("BAC", "bac"),
         ("\uff22\uff21\uff23", "bac"),
-        pytest.param(
-            "\u00c1b",
-            "ab",
-            marks=pytest.mark.xfail(
-                strict=True,
-                reason=(
-                    "Issue #27: normalize_to_alphabet replaces combining marks with "
-                    "spaces; corpus normalizers drop them"
-                ),
-            ),
-        ),
         ("b!!\t\nc", "b c"),
         ("  bac  ", " bac "),
         ("", " "),
@@ -72,3 +61,16 @@ def test_normalization_decomposes_lowercases_and_collapses_spaces(
     assert normalized == expected
     assert normalize_to_alphabet(normalized, codec) == normalized
     assert codec.decode(encode_fast(normalized, codec).tolist()) == expected
+
+
+@pytest.mark.xfail(
+    strict=True,
+    raises=AssertionError,
+    reason=(
+        "Issue #27: normalize_to_alphabet replaces combining marks with "
+        "spaces; corpus normalizers drop them"
+    ),
+)
+def test_normalization_drops_combining_marks_like_corpus_builders(codec: Codec) -> None:
+    """normalize_to_alphabet should drop combining marks, as the corpus builders do."""
+    assert normalize_to_alphabet("\u00c1b", codec) == "ab"

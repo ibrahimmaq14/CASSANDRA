@@ -42,6 +42,9 @@ The accented normalization case expects the documented corpus behavior
 [Issue 27](https://github.com/Cassandra-Collective/CASSANDRA/issues/27).
 The current helper inserts a space for the combining mark. A future fix
 will cause a strict XPASS failure, prompting removal of the marker.
+This is a standalone equality test with `raises=AssertionError`, so an
+unrelated runtime exception is a failure rather than an expected failure.
+The ordinary normalization and codec round-trip checks remain unmarked.
 
 The stretch check builds a tiny transformer, applies the same
 `zero_output_head` helper used by the count-bigram training path, and checks
@@ -149,6 +152,30 @@ With `OMP_NUM_THREADS=1` and `MKL_NUM_THREADS=1`, this reported
 normalization case tracked in Issue 27. All `48` tracked Python files
 passed AST parsing; `git diff --check` and the changed-Markdown dash check
 were clean. This is helper-test validation, not a new research comparison.
+
+### Full PR recheck, 2026-11-02
+
+Rechecked the PR discussion, Issue 12 acceptance criteria, Issue 27, all
+test modules, the corresponding helpers, and the documentation changes.
+There were no new reviewer requests after the previous follow-up.
+
+Narrowed the Issue 27 expected failure to its own equality test and limited
+the marker to `AssertionError`. Previously the marked parametrized case
+also covered idempotence and codec round-trip assertions and accepted any
+exception. An unrelated runtime error could therefore be hidden as an
+expected failure. The README now explains `xfailed` and `XPASS(strict)`.
+
+In the same WSL CPU environment, with `OMP_NUM_THREADS=1` and
+`MKL_NUM_THREADS=1`, `python -m pytest -q -rx --durations=5` reported
+`76 passed, 1 xfailed in 2.10s`. All `48` tracked Python files parsed, and
+the PR Markdown dash check and `git diff --check` passed.
+
+Two local in-memory probes replaced only the imported normalization
+function during pytest collection: returning `"ab"` caused
+`XPASS(strict)` and exit code `1`; raising an unrelated `RuntimeError`
+caused an ordinary failure and exit code `1`. These probe scripts were
+local-only and are not included in the repository. Production source and
+recorded research results were unchanged.
 
 ## Related Docs
 

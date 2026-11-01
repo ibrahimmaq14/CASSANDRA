@@ -880,6 +880,11 @@ seeded in-memory corpora, and a tiny forward pass with a frozen count prior.
 The suite does not train models or write generated research artifacts. Each
 test's docstring names the function or documented behavior it protects.
 
+One strict expected failure tracks the combining-mark normalization bug in
+[Issue 27](https://github.com/Cassandra-Collective/CASSANDRA/issues/27).
+Until that fix lands, pytest reports it as `xfailed`. Once fixed, the test
+will fail with `XPASS(strict)` until its expected-failure marker is removed.
+
 `tests/conftest.py` adds this lab directory to `sys.path`, preserving the
 scripts' sibling imports. The tests complement the CPU quick-start smoke
 commands in `CONTRIBUTING.md`; they do not replace experiment validation.
